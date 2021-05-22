@@ -10,8 +10,8 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-@Entity (name = "user")
-@Table(catalog = "user")
+@Entity(name = "user")
+@Table(name = "user")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User implements Serializable {
 
