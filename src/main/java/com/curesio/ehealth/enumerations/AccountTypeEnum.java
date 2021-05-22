@@ -7,13 +7,13 @@ public enum AccountTypeEnum {
     LABORATORY("LAB"),
     PHARMACY("PHA");
 
-    private String name;
+    private String value;
 
-    AccountTypeEnum(String name) {
-        this.name = name;
+    AccountTypeEnum(String value) {
+        this.value = value;
     }
 
-    public String getName() {
-        return name;
+    public String getValue() {
+        return value;
     }
 }

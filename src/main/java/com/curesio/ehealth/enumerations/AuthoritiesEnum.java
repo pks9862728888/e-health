@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import static com.curesio.ehealth.constants.Authorities.*;
 
-public enum Authorities {
+public enum AuthoritiesEnum {
     ROLE_USER(USER_AUTHORITIES, "ROLE_USER"),
     ROLE_HOSPITAL_ADMIN(HOSPITAL_ADMIN_AUTHORITIES, "ROLE_HOSPITAL_ADMIN"),
     ROLE_HOSPITAL_STAFF(HOSPITAL_STAFF_AUTHORITIES, "ROLE_HOSPITAL_STAFF"),
@@ -18,11 +18,11 @@ public enum Authorities {
     ROLE_ACCOUNT_VERIFICATION_STAFF(ACCOUNT_VERIFICATION_STAFF_AUTHORITIES, "ROLE_ACCOUNT_VERIFICATION_STAFF");
 
     private ArrayList<String> authorities;
-    private String name;
+    private String value;
 
-    Authorities(ArrayList<String> authorities, String name) {
+    AuthoritiesEnum(ArrayList<String> authorities, String value) {
         this.authorities = authorities;
-        this.name = name;
+        this.value = value;
     }
 
     public ArrayList<String> getAuthorities() {
@@ -33,11 +33,11 @@ public enum Authorities {
         this.authorities = authorities;
     }
 
-    public String getName() {
-        return name;
+    public String getValue() {
+        return value;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setValue(String value) {
+        this.value = value;
     }
 }

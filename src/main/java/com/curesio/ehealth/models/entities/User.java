@@ -1,7 +1,7 @@
 package com.curesio.ehealth.models.entities;
 
 import com.curesio.ehealth.enumerations.AccountTypeEnum;
-import com.curesio.ehealth.enumerations.Authorities;
+import com.curesio.ehealth.enumerations.AuthoritiesEnum;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -38,7 +38,7 @@ public class User implements Serializable {
     private AccountTypeEnum accountType;
 
     @Column(name = "role")
-    private Authorities role;
+    private AuthoritiesEnum role;
 
     @Column(name = "authorities", nullable = false)
     private ArrayList<String> authorities;
@@ -51,6 +51,33 @@ public class User implements Serializable {
 
     @Column(name = "is_phone_verified", nullable = false)
     private boolean isPhoneVerified;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    private UserDetails userDetails;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    private KycStatus kycStatus;
+
+    public User() {}
+
+    public User(long id, String userId, String username, String email, String password, String phone, AccountTypeEnum accountType, AuthoritiesEnum role, ArrayList<String> authorities, boolean isActive, boolean isNonLocked, boolean isPhoneVerified, UserDetails userDetails, KycStatus kycStatus) {
+        this.id = id;
+        this.userId = userId;
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.phone = phone;
+        this.accountType = accountType;
+        this.role = role;
+        this.authorities = authorities;
+        this.isActive = isActive;
+        this.isNonLocked = isNonLocked;
+        this.isPhoneVerified = isPhoneVerified;
+        this.userDetails = userDetails;
+        this.kycStatus = kycStatus;
+    }
 
     public long getId() {
         return id;
@@ -110,11 +137,11 @@ public class User implements Serializable {
         this.accountType = accountType;
     }
 
-    public Authorities getRole() {
+    public AuthoritiesEnum getRole() {
         return role;
     }
 
-    public void setRole(Authorities role) {
+    public void setRole(AuthoritiesEnum role) {
         this.role = role;
     }
 
@@ -148,5 +175,21 @@ public class User implements Serializable {
 
     public void setPhoneVerified(boolean phoneVerified) {
         isPhoneVerified = phoneVerified;
+    }
+
+    public UserDetails getUserDetails() {
+        return userDetails;
+    }
+
+    public void setUserDetails(UserDetails userDetails) {
+        this.userDetails = userDetails;
+    }
+
+    public KycStatus getKycStatus() {
+        return kycStatus;
+    }
+
+    public void setKycStatus(KycStatus kycStatus) {
+        this.kycStatus = kycStatus;
     }
 }
