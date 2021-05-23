@@ -1,16 +1,16 @@
 package com.curesio.ehealth.enumerations.converters;
 
-import com.curesio.ehealth.enumerations.ResourceKycDocumentFileTypeEnum;
+import com.curesio.ehealth.enumerations.KycDocumentFileTypeEnum;
 
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 import java.util.stream.Stream;
 
 @Converter(autoApply = true)
-public class ResourceKycDocumentFileTypeEnumConverter implements AttributeConverter<ResourceKycDocumentFileTypeEnum, String> {
+public class ResourceKycDocumentFileTypeEnumConverter implements AttributeConverter<KycDocumentFileTypeEnum, String> {
 
     @Override
-    public String convertToDatabaseColumn(ResourceKycDocumentFileTypeEnum attribute) {
+    public String convertToDatabaseColumn(KycDocumentFileTypeEnum attribute) {
         if (attribute == null) {
             return null;
         }
@@ -18,8 +18,8 @@ public class ResourceKycDocumentFileTypeEnumConverter implements AttributeConver
     }
 
     @Override
-    public ResourceKycDocumentFileTypeEnum convertToEntityAttribute(String dbData) {
-        return Stream.of(ResourceKycDocumentFileTypeEnum.values())
+    public KycDocumentFileTypeEnum convertToEntityAttribute(String dbData) {
+        return Stream.of(KycDocumentFileTypeEnum.values())
                 .filter(t -> t.getValue().equals(dbData))
                 .findFirst()
                 .orElseThrow(IllegalArgumentException::new);

@@ -1,12 +1,12 @@
 package com.curesio.ehealth.enumerations;
 
-public enum ResourceKycDocumentFileTypeEnum {
+public enum KycDocumentFileTypeEnum {
     PDF("PDF"),
     IMG("IMG");
 
     String value;
 
-    ResourceKycDocumentFileTypeEnum(String value) {
+    KycDocumentFileTypeEnum(String value) {
         this.value = value;
     }
 

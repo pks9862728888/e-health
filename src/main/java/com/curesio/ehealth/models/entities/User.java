@@ -19,8 +19,9 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name = "user_id", unique = true, nullable = false, updatable = false)
-    private String userId;
+    @Column(name = "user_unique_id", unique = true, nullable = false, updatable = false)
+    @JsonProperty("user_unique_id")
+    private String userUniqueId;
 
     @Column(name = "username", unique = true, nullable = false)
     private String username;
@@ -35,30 +36,34 @@ public class User {
     private String phone;
 
     @Column(name = "account_type", nullable = false)
+    @JsonProperty("account_type")
     private AccountTypeEnum accountType;
 
     @Column(name = "role")
     private AuthoritiesEnum role;
 
-    @Column(name = "authorities", nullable = false)
+    @Column(name = "authorities")
     private ArrayList<String> authorities;
 
     @Column(name = "is_active", nullable = false)
+    @JsonProperty("is_active")
     private boolean isActive;
 
     @Column(name = "is_non_locked")
+    @JsonProperty("is_non_locked")
     private boolean isNonLocked;
 
     @Column(name = "is_phone_verified", nullable = false)
+    @JsonProperty("is_phone_verified")
     private boolean isPhoneVerified;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
-    private UserDetails userDetails;
+    private UserCustomDetails userCustomDetails;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
-    private KycStatus kycStatus;
+    private UserKycStatus userKycStatus;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
@@ -78,9 +83,9 @@ public class User {
 
     public User() {}
 
-    public User(long id, String userId, String username, String email, String password, String phone, AccountTypeEnum accountType, AuthoritiesEnum role, ArrayList<String> authorities, boolean isActive, boolean isNonLocked, boolean isPhoneVerified, UserDetails userDetails, KycStatus kycStatus, UserKycDocuments userKycDocuments, List<ResourceKycDocuments> resourceKycDocuments, HospitalDetails hospitalDetails, LaboratoryDetails laboratoryDetails, PhysicianDetails physicianDetails) {
+    public User(long id, String userUniqueId, String username, String email, String password, String phone, AccountTypeEnum accountType, AuthoritiesEnum role, ArrayList<String> authorities, boolean isActive, boolean isNonLocked, boolean isPhoneVerified, UserCustomDetails userCustomDetails, UserKycStatus userKycStatus, UserKycDocuments userKycDocuments, List<ResourceKycDocuments> resourceKycDocuments, HospitalDetails hospitalDetails, LaboratoryDetails laboratoryDetails, PhysicianDetails physicianDetails) {
         this.id = id;
-        this.userId = userId;
+        this.userUniqueId = userUniqueId;
         this.username = username;
         this.email = email;
         this.password = password;
@@ -91,8 +96,8 @@ public class User {
         this.isActive = isActive;
         this.isNonLocked = isNonLocked;
         this.isPhoneVerified = isPhoneVerified;
-        this.userDetails = userDetails;
-        this.kycStatus = kycStatus;
+        this.userCustomDetails = userCustomDetails;
+        this.userKycStatus = userKycStatus;
         this.userKycDocuments = userKycDocuments;
         this.resourceKycDocuments = resourceKycDocuments;
         this.hospitalDetails = hospitalDetails;
@@ -108,12 +113,12 @@ public class User {
         this.id = id;
     }
 
-    public String getUserId() {
-        return userId;
+    public String getUserUniqueId() {
+        return userUniqueId;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setUserUniqueId(String userUniqueId) {
+        this.userUniqueId = userUniqueId;
     }
 
     public String getUsername() {
@@ -198,20 +203,20 @@ public class User {
         isPhoneVerified = phoneVerified;
     }
 
-    public UserDetails getUserDetails() {
-        return userDetails;
+    public UserCustomDetails getUserCustomDetails() {
+        return userCustomDetails;
     }
 
-    public void setUserDetails(UserDetails userDetails) {
-        this.userDetails = userDetails;
+    public void setUserCustomDetails(UserCustomDetails userCustomDetails) {
+        this.userCustomDetails = userCustomDetails;
     }
 
-    public KycStatus getKycStatus() {
-        return kycStatus;
+    public UserKycStatus getUserKycStatus() {
+        return userKycStatus;
     }
 
-    public void setKycStatus(KycStatus kycStatus) {
-        this.kycStatus = kycStatus;
+    public void setUserKycStatus(UserKycStatus userKycStatus) {
+        this.userKycStatus = userKycStatus;
     }
 
     public UserKycDocuments getUserKycDocuments() {

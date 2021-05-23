@@ -3,6 +3,10 @@ package com.curesio.ehealth.resources;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.curesio.ehealth.exceptions.*;
 import com.curesio.ehealth.models.HttpResponse;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import net.sf.jmimemagic.MagicException;
+import net.sf.jmimemagic.MagicMatchNotFoundException;
+import net.sf.jmimemagic.MagicParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
@@ -30,6 +34,7 @@ public class ExceptionHandlingController {
     private static final String INCORRECT_CREDENTIALS_MSG = "Username / password incorrect. Please try again.";
     private static final String ACCOUNT_DISABLED_MSG = "Your account has been disabled. If this is an error, please contact administrator.";
     private static final String ERROR_PROCESSING_FILE_MSG = "Error occurred while processing file.";
+    private static final String ERROR_PROCESSING_FORM_DATA_MSG = "Internal server error occurred while processing form data.";
     private static final String NOT_ENOUGH_PERMISSION_MSG = "You do not have enough permission.";
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
@@ -90,16 +95,28 @@ public class ExceptionHandlingController {
         return createHttpResponse(HttpStatus.BAD_REQUEST, exception.getMessage());
     }
 
-    @ExceptionHandler(IOException.class)
-    public ResponseEntity<HttpResponse> ioException(IOException exception) {
+    @ExceptionHandler({IOException.class, MagicMatchNotFoundException.class, MagicException.class, MagicParseException.class})
+    public ResponseEntity<HttpResponse> ioException(Exception exception) {
         LOGGER.error(exception.getMessage());
         LOGGER.error(Arrays.toString(exception.getStackTrace()));
         return createHttpResponse(HttpStatus.BAD_REQUEST, ERROR_PROCESSING_FILE_MSG);
     }
 
+    @ExceptionHandler({FileSizeTooLargeException.class, FileTypeNotAllowedException.class})
+    public ResponseEntity<HttpResponse> badFileTypeException(Exception exception) {
+        return createHttpResponse(HttpStatus.BAD_REQUEST, exception.getMessage());
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<HttpResponse> resourceNotFoundException(ResourceNotFoundException exception) {
         return createHttpResponse(HttpStatus.BAD_REQUEST, exception.getMessage());
+    }
+
+    @ExceptionHandler(JsonProcessingException.class)
+    public ResponseEntity<HttpResponse> jsonException(JsonProcessingException exception) {
+        LOGGER.error(exception.getMessage());
+        LOGGER.error(Arrays.toString(exception.getStackTrace()));
+        return createHttpResponse(HttpStatus.BAD_REQUEST, ERROR_PROCESSING_FORM_DATA_MSG);
     }
 
     @ExceptionHandler(Exception.class)

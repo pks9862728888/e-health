@@ -5,23 +5,25 @@ import com.curesio.ehealth.enumerations.GenderEnum;
 import com.curesio.ehealth.enumerations.StateEnum;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
-import java.util.Date;
 
-@Entity(name = "user_details")
-@Table(name = "user_details")
+@Entity(name = "user_custom_details")
+@Table(name = "user_custom_details")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class UserDetails {
+public class UserCustomDetails {
 
     @Id
     @Column(name = "user_id")
     private long id;
 
     @Column(name = "first_name", nullable = false)
+    @JsonProperty("first_name")
     private String firstName;
 
     @Column(name = "last_name", nullable = false)
+    @JsonProperty("last_name")
     private String lastName;
 
     @Column(name = "gender", nullable = false)
@@ -29,7 +31,8 @@ public class UserDetails {
 
     @Column(name = "date_of_birth", nullable = false)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy", timezone = "Asia/Kolkata")
-    private Date dateOfBirth;
+    @JsonProperty("date_of_birth")
+    private String dateOfBirth;
 
     @Column(name = "address")
     private String address;
@@ -41,6 +44,7 @@ public class UserDetails {
     private CountryEnum country;
 
     @Column(name = "pin_code")
+    @JsonProperty("pin_code")
     private String pinCode;
 
     @OneToOne
@@ -48,9 +52,9 @@ public class UserDetails {
     @JoinColumn(name = "user_id")
     private User user;
 
-    public UserDetails() {}
+    public UserCustomDetails() {}
 
-    public UserDetails(long id, String firstName, String lastName, GenderEnum gender, Date dateOfBirth, String address, StateEnum state, CountryEnum country, String pinCode, User user) {
+    public UserCustomDetails(long id, String firstName, String lastName, GenderEnum gender, String dateOfBirth, String address, StateEnum state, CountryEnum country, String pinCode, User user) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -95,11 +99,11 @@ public class UserDetails {
         this.gender = gender;
     }
 
-    public Date getDateOfBirth() {
+    public String getDateOfBirth() {
         return dateOfBirth;
     }
 
-    public void setDateOfBirth(Date dateOfBirth) {
+    public void setDateOfBirth(String dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
 

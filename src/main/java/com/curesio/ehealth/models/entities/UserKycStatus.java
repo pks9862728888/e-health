@@ -6,10 +6,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
 
-@Entity(name = "kyc_status")
-@Table(name = "kyc_status")
+@Entity(name = "user_kyc_status")
+@Table(name = "user_kyc_status")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class KycStatus {
+public class UserKycStatus {
 
     @Id
     @Column(name = "user_id")
@@ -32,9 +32,9 @@ public class KycStatus {
     @JoinColumn(name = "user_id")
     private User user;
 
-    public KycStatus() {}
+    public UserKycStatus() {}
 
-    public KycStatus(long id, UserKycStatusEnum userKycStatus, ResourceKycStatusEnum resourceKycStatus, String reasonUserKycStatus, String reasonResourceKycStatus, User user) {
+    public UserKycStatus(long id, UserKycStatusEnum userKycStatus, ResourceKycStatusEnum resourceKycStatus, String reasonUserKycStatus, String reasonResourceKycStatus, User user) {
         this.id = id;
         this.userKycStatus = userKycStatus;
         this.resourceKycStatus = resourceKycStatus;

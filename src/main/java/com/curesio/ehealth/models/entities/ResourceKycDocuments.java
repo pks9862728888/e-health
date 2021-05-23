@@ -1,6 +1,6 @@
 package com.curesio.ehealth.models.entities;
 
-import com.curesio.ehealth.enumerations.ResourceKycDocumentFileTypeEnum;
+import com.curesio.ehealth.enumerations.KycDocumentFileTypeEnum;
 
 import javax.persistence.*;
 
@@ -12,7 +12,7 @@ public class ResourceKycDocuments {
     private long id;
 
     @Column(name = "document_file_type", nullable = false)
-    private ResourceKycDocumentFileTypeEnum documentFileType;
+    private KycDocumentFileTypeEnum documentFileType;
 
     @Column(name = "file", nullable = false)
     private String file;
@@ -23,7 +23,7 @@ public class ResourceKycDocuments {
 
     public ResourceKycDocuments() {}
 
-    public ResourceKycDocuments(long id, ResourceKycDocumentFileTypeEnum documentFileType, String file, User user) {
+    public ResourceKycDocuments(long id, KycDocumentFileTypeEnum documentFileType, String file, User user) {
         this.id = id;
         this.documentFileType = documentFileType;
         this.file = file;
@@ -38,11 +38,11 @@ public class ResourceKycDocuments {
         this.id = id;
     }
 
-    public ResourceKycDocumentFileTypeEnum getDocumentFileType() {
+    public KycDocumentFileTypeEnum getDocumentFileType() {
         return documentFileType;
     }
 
-    public void setDocumentFileType(ResourceKycDocumentFileTypeEnum documentFileType) {
+    public void setDocumentFileType(KycDocumentFileTypeEnum documentFileType) {
         this.documentFileType = documentFileType;
     }
 
