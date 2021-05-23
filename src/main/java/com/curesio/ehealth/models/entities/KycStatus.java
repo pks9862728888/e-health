@@ -2,11 +2,13 @@ package com.curesio.ehealth.models.entities;
 
 import com.curesio.ehealth.enumerations.ResourceKycStatusEnum;
 import com.curesio.ehealth.enumerations.UserKycStatusEnum;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
 
 @Entity(name = "kyc_status")
 @Table(name = "kyc_status")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class KycStatus {
 
     @Id

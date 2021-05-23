@@ -7,13 +7,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 @Entity(name = "user")
 @Table(name = "user")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class User implements Serializable {
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -60,9 +60,25 @@ public class User implements Serializable {
     @PrimaryKeyJoinColumn
     private KycStatus kycStatus;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    private UserKycDocuments userKycDocuments;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<ResourceKycDocuments> resourceKycDocuments;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private HospitalDetails hospitalDetails;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private LaboratoryDetails laboratoryDetails;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private PhysicianDetails physicianDetails;
+
     public User() {}
 
-    public User(long id, String userId, String username, String email, String password, String phone, AccountTypeEnum accountType, AuthoritiesEnum role, ArrayList<String> authorities, boolean isActive, boolean isNonLocked, boolean isPhoneVerified, UserDetails userDetails, KycStatus kycStatus) {
+    public User(long id, String userId, String username, String email, String password, String phone, AccountTypeEnum accountType, AuthoritiesEnum role, ArrayList<String> authorities, boolean isActive, boolean isNonLocked, boolean isPhoneVerified, UserDetails userDetails, KycStatus kycStatus, UserKycDocuments userKycDocuments, List<ResourceKycDocuments> resourceKycDocuments, HospitalDetails hospitalDetails, LaboratoryDetails laboratoryDetails, PhysicianDetails physicianDetails) {
         this.id = id;
         this.userId = userId;
         this.username = username;
@@ -77,6 +93,11 @@ public class User implements Serializable {
         this.isPhoneVerified = isPhoneVerified;
         this.userDetails = userDetails;
         this.kycStatus = kycStatus;
+        this.userKycDocuments = userKycDocuments;
+        this.resourceKycDocuments = resourceKycDocuments;
+        this.hospitalDetails = hospitalDetails;
+        this.laboratoryDetails = laboratoryDetails;
+        this.physicianDetails = physicianDetails;
     }
 
     public long getId() {
@@ -191,5 +212,45 @@ public class User implements Serializable {
 
     public void setKycStatus(KycStatus kycStatus) {
         this.kycStatus = kycStatus;
+    }
+
+    public UserKycDocuments getUserKycDocuments() {
+        return userKycDocuments;
+    }
+
+    public void setUserKycDocuments(UserKycDocuments userKycDocuments) {
+        this.userKycDocuments = userKycDocuments;
+    }
+
+    public List<ResourceKycDocuments> getResourceKycDocuments() {
+        return resourceKycDocuments;
+    }
+
+    public void setResourceKycDocuments(List<ResourceKycDocuments> resourceKycDocuments) {
+        this.resourceKycDocuments = resourceKycDocuments;
+    }
+
+    public HospitalDetails getHospitalDetails() {
+        return hospitalDetails;
+    }
+
+    public void setHospitalDetails(HospitalDetails hospitalDetails) {
+        this.hospitalDetails = hospitalDetails;
+    }
+
+    public LaboratoryDetails getLaboratoryDetails() {
+        return laboratoryDetails;
+    }
+
+    public void setLaboratoryDetails(LaboratoryDetails laboratoryDetails) {
+        this.laboratoryDetails = laboratoryDetails;
+    }
+
+    public PhysicianDetails getPhysicianDetails() {
+        return physicianDetails;
+    }
+
+    public void setPhysicianDetails(PhysicianDetails physicianDetails) {
+        this.physicianDetails = physicianDetails;
     }
 }

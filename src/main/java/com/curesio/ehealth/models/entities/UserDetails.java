@@ -2,13 +2,16 @@ package com.curesio.ehealth.models.entities;
 
 import com.curesio.ehealth.enumerations.CountryEnum;
 import com.curesio.ehealth.enumerations.GenderEnum;
+import com.curesio.ehealth.enumerations.StateEnum;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
 import java.util.Date;
 
 @Entity(name = "user_details")
 @Table(name = "user_details")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class UserDetails {
 
     @Id
@@ -32,7 +35,7 @@ public class UserDetails {
     private String address;
 
     @Column(name = "state")
-    private String state;
+    private StateEnum state;
 
     @Column(name = "country", nullable = false)
     private CountryEnum country;
@@ -47,7 +50,7 @@ public class UserDetails {
 
     public UserDetails() {}
 
-    public UserDetails(long id, String firstName, String lastName, GenderEnum gender, Date dateOfBirth, String address, String state, CountryEnum country, String pinCode, User user) {
+    public UserDetails(long id, String firstName, String lastName, GenderEnum gender, Date dateOfBirth, String address, StateEnum state, CountryEnum country, String pinCode, User user) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -108,11 +111,11 @@ public class UserDetails {
         this.address = address;
     }
 
-    public String getState() {
+    public StateEnum getState() {
         return state;
     }
 
-    public void setState(String state) {
+    public void setState(StateEnum state) {
         this.state = state;
     }
 

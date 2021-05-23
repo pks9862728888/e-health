@@ -5,7 +5,11 @@ public enum AccountTypeEnum {
     HOSPITAL("HOS"),
     PHYSICIAN("PHY"),
     LABORATORY("LAB"),
-    PHARMACY("PHA");
+    PHARMACY("PHA"),
+    HOSPITAL_STAFF("HOS_STAFF"),
+    PHYSICIAN_STAFF("PHY_STAFF"),
+    LABORATORY_STAFF("LAB_STAFF"),
+    PHARMACY_STAFF("PHA_STAFF");
 
     private String value;
 
