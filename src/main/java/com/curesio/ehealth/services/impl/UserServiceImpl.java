@@ -1,17 +1,16 @@
 package com.curesio.ehealth.services.impl;
 
-import com.curesio.ehealth.enumerations.AccountTypeEnum;
-import com.curesio.ehealth.enumerations.CountryEnum;
-import com.curesio.ehealth.enumerations.KycDocumentFileTypeEnum;
-import com.curesio.ehealth.enumerations.UserKycDocumentTypeEnum;
+import com.curesio.ehealth.enumerations.*;
 import com.curesio.ehealth.exceptions.FileSizeTooLargeException;
 import com.curesio.ehealth.exceptions.FileTypeNotAllowedException;
 import com.curesio.ehealth.models.UserPrincipal;
 import com.curesio.ehealth.models.entities.User;
 import com.curesio.ehealth.models.entities.UserCustomDetails;
 import com.curesio.ehealth.models.entities.UserKycDocuments;
+import com.curesio.ehealth.models.entities.UserKycStatus;
 import com.curesio.ehealth.repositories.UserCustomDetailsRepository;
 import com.curesio.ehealth.repositories.UserKycDocumentsRepository;
+import com.curesio.ehealth.repositories.UserKycStatusRepository;
 import com.curesio.ehealth.repositories.UserRepository;
 import com.curesio.ehealth.services.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,14 +53,16 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
     private UserCustomDetailsRepository userCustomDetailsRepository;
     private UserKycDocumentsRepository userKycDocumentsRepository;
+    private UserKycStatusRepository userKycStatusRepository;
     private PasswordEncoder passwordEncoder;
     private Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, UserCustomDetailsRepository userCustomDetailsRepository, UserKycDocumentsRepository userKycDocumentsRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, UserCustomDetailsRepository userCustomDetailsRepository, UserKycDocumentsRepository userKycDocumentsRepository, UserKycStatusRepository userKycStatusRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userCustomDetailsRepository = userCustomDetailsRepository;
         this.userKycDocumentsRepository = userKycDocumentsRepository;
+        this.userKycStatusRepository = userKycStatusRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -93,7 +94,7 @@ public class UserServiceImpl implements UserService {
 
         // wire in values in user object
         user.setActive(USER_IS_ACTIVE_INITIALLY);
-        user.setNonLocked(USER_ACCOUNT_IS_LOCKED_INITIALLY);
+        user.setNonLocked(USER_ACCOUNT_IS_NON_LOCKED_INITIALLY);
         user.setPhoneVerified(USER_PHONE_IS_VERIFIED_INITIALLY);
         user.setEmail(user.getEmail().strip());
         user.setPhone(getStringIfExistsOrNull(user.getPhone()));
@@ -117,6 +118,13 @@ public class UserServiceImpl implements UserService {
         kycDocuments.setIdFront(saveUserKycDocuments(user.getUserUniqueId(), idFront, "id_front"));
         kycDocuments.setIdBack(saveUserKycDocuments(user.getUserUniqueId(), idBack, "id_back"));
         userKycDocumentsRepository.saveAndFlush(kycDocuments);
+
+        // Save user kyc status details
+        UserKycStatus userKycStatus = new UserKycStatus();
+        userKycStatus.setUser(user);
+        userKycStatus.setUserKycStatus(UserKycStatusEnum.UNVERIFIED);
+        userKycStatus.setResourceKycStatus(ResourceKycStatusEnum.NOT_APPLICABLE);
+        userKycStatusRepository.saveAndFlush(userKycStatus);
 
         return user;
     }
@@ -176,7 +184,7 @@ public class UserServiceImpl implements UserService {
         int randomLength = USER_ID_LENGTH - userId.length();
 
         while (true) {
-            String id = RandomStringUtils.randomAlphanumeric(randomLength, randomLength + 1).toUpperCase();
+            String id = RandomStringUtils.randomAlphanumeric(randomLength, randomLength).toUpperCase();
 
             // Check whether id exists
             if (userRepository.countAllByUserUniqueId(userId.toString() + id) == 0) {

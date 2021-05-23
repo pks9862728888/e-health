@@ -8,7 +8,7 @@ public interface UserImplementationConstants {
     String FILE_SIZE_TOO_LARGE_MSG = "File type too large. Max allowed file size is: %s Mb";
     int USER_ID_LENGTH = 10;
     boolean USER_IS_ACTIVE_INITIALLY = false;
-    boolean USER_ACCOUNT_IS_LOCKED_INITIALLY = false;
+    boolean USER_ACCOUNT_IS_NON_LOCKED_INITIALLY = true;
     boolean USER_PHONE_IS_VERIFIED_INITIALLY = false;
     String PDF_MIME_TYPE = "application/pdf";
 

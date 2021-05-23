@@ -9,6 +9,7 @@ import net.sf.jmimemagic.MagicMatchNotFoundException;
 import net.sf.jmimemagic.MagicParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,10 +24,12 @@ import java.io.IOException;
 public class UserController extends ExceptionHandlingController {
 
     private UserService userService;
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @Autowired
-    public UserController(@Qualifier("userService") UserService userService) {
+    public UserController(@Qualifier("userService") UserService userService, ApplicationEventPublisher applicationEventPublisher) {
         this.userService = userService;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     @PostMapping(value = "/sign-up", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
