@@ -19,6 +19,9 @@ public class AccountTypeEnumConverter implements AttributeConverter<AccountTypeE
 
     @Override
     public AccountTypeEnum convertToEntityAttribute(String dbData) {
+        if (dbData == null) {
+            return null;
+        }
         return Stream.of(AccountTypeEnum.values())
                 .filter(a -> a.getValue().equals(dbData))
                 .findFirst()

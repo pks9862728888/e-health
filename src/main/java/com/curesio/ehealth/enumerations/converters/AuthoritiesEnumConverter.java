@@ -18,6 +18,9 @@ public class AuthoritiesEnumConverter implements AttributeConverter<AuthoritiesE
 
     @Override
     public AuthoritiesEnum convertToEntityAttribute(String dbData) {
+        if (dbData == null) {
+            return null;
+        }
         return Stream.of(AuthoritiesEnum.values())
                 .filter(a -> a.getValue().equals(dbData))
                 .findFirst()

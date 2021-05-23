@@ -19,6 +19,9 @@ public class ResourceKycDocumentFileTypeEnumConverter implements AttributeConver
 
     @Override
     public KycDocumentFileTypeEnum convertToEntityAttribute(String dbData) {
+        if (dbData == null) {
+            return null;
+        }
         return Stream.of(KycDocumentFileTypeEnum.values())
                 .filter(t -> t.getValue().equals(dbData))
                 .findFirst()

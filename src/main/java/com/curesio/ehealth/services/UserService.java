@@ -10,9 +10,12 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Optional;
 
 public interface UserService extends UserDetailsService {
 
     User registerUser(String userCredentials, String userDetails, String documentType, MultipartFile idFront, MultipartFile idBack) throws IOException, MagicMatchNotFoundException, MagicException, MagicParseException, FileTypeNotAllowedException, FileSizeTooLargeException;
+
+    Optional<String> generateVerificationTokenAndSaveToDb(long id);
 
 }

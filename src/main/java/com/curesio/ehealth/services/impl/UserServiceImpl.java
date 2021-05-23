@@ -4,14 +4,8 @@ import com.curesio.ehealth.enumerations.*;
 import com.curesio.ehealth.exceptions.FileSizeTooLargeException;
 import com.curesio.ehealth.exceptions.FileTypeNotAllowedException;
 import com.curesio.ehealth.models.UserPrincipal;
-import com.curesio.ehealth.models.entities.User;
-import com.curesio.ehealth.models.entities.UserCustomDetails;
-import com.curesio.ehealth.models.entities.UserKycDocuments;
-import com.curesio.ehealth.models.entities.UserKycStatus;
-import com.curesio.ehealth.repositories.UserCustomDetailsRepository;
-import com.curesio.ehealth.repositories.UserKycDocumentsRepository;
-import com.curesio.ehealth.repositories.UserKycStatusRepository;
-import com.curesio.ehealth.repositories.UserRepository;
+import com.curesio.ehealth.models.entities.*;
+import com.curesio.ehealth.repositories.*;
 import com.curesio.ehealth.services.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.sf.jmimemagic.*;
@@ -34,7 +28,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
 import static com.curesio.ehealth.constants.UserImplementationConstants.*;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
@@ -50,19 +48,30 @@ public class UserServiceImpl implements UserService {
     @Value("${kyc.max-file-size-in-mb}")
     private Integer kycMaxFileSize;
 
+    @Value("${verification-token-expiry-days}")
+    private int tokenExpiryDays;
+
+    @Value("${server.offset-hours}")
+    private int serverOffsetHours;
+
+    @Value("${server.offset-minutes}")
+    private int serverOffsetMinutes;
+
     private UserRepository userRepository;
     private UserCustomDetailsRepository userCustomDetailsRepository;
     private UserKycDocumentsRepository userKycDocumentsRepository;
     private UserKycStatusRepository userKycStatusRepository;
+    private EmailVerificationTokenRepository emailVerificationTokenRepository;
     private PasswordEncoder passwordEncoder;
     private Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, UserCustomDetailsRepository userCustomDetailsRepository, UserKycDocumentsRepository userKycDocumentsRepository, UserKycStatusRepository userKycStatusRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, UserCustomDetailsRepository userCustomDetailsRepository, UserKycDocumentsRepository userKycDocumentsRepository, UserKycStatusRepository userKycStatusRepository, EmailVerificationTokenRepository emailVerificationTokenRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userCustomDetailsRepository = userCustomDetailsRepository;
         this.userKycDocumentsRepository = userKycDocumentsRepository;
         this.userKycStatusRepository = userKycStatusRepository;
+        this.emailVerificationTokenRepository = emailVerificationTokenRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -129,6 +138,27 @@ public class UserServiceImpl implements UserService {
         return user;
     }
 
+    @Override
+    public Optional<String> generateVerificationTokenAndSaveToDb(long id) {
+        Optional<User> optionalUser = userRepository.findById(id);
+
+        if (optionalUser.isEmpty()) {
+            return Optional.empty();
+        }
+
+        // Generating and saving token in repository
+        EmailVerificationToken emailVerificationToken = new EmailVerificationToken();
+        emailVerificationToken.setUser(optionalUser.get());
+        emailVerificationToken.setToken(UUID.randomUUID().toString());
+        emailVerificationToken.setCreatedOn(OffsetDateTime.now());
+        Date expiresOn = new Date(System.currentTimeMillis() + tokenExpiryDays * 24 * 60 * 60 * 1000);
+        emailVerificationToken.setExpiresOn(expiresOn.toInstant().atOffset(ZoneOffset.ofHoursMinutes(serverOffsetHours, serverOffsetMinutes)));
+        emailVerificationToken.setSent(false);
+        emailVerificationTokenRepository.saveAndFlush(emailVerificationToken);
+
+        return Optional.of(emailVerificationToken.getToken());
+    }
+
     private KycDocumentFileTypeEnum getFileTypeIfFileTypeIsValid(MultipartFile file) throws IOException, MagicParseException, MagicMatchNotFoundException, FileTypeNotAllowedException, FileSizeTooLargeException, MagicException {
         if (file == null) {
             return null;
@@ -145,7 +175,7 @@ public class UserServiceImpl implements UserService {
 
         if (mimeType.equalsIgnoreCase(MimeTypeUtils.IMAGE_JPEG_VALUE) || mimeType.equalsIgnoreCase(MimeTypeUtils.IMAGE_PNG_VALUE)) {
             return KycDocumentFileTypeEnum.IMG;
-        } else if (mimeType.equalsIgnoreCase(PDF_MIME_TYPE)){
+        } else if (mimeType.equalsIgnoreCase(PDF_MIME_TYPE)) {
             return KycDocumentFileTypeEnum.PDF;
         } else {
             throw new FileTypeNotAllowedException(FILE_TYPE_NOT_ALLOWED_MSG);

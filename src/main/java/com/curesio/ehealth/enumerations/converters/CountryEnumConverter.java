@@ -19,6 +19,9 @@ public class CountryEnumConverter implements AttributeConverter<CountryEnum, Str
 
     @Override
     public CountryEnum convertToEntityAttribute(String dbData) {
+        if (dbData == null) {
+            return null;
+        }
         return Stream.of(CountryEnum.values())
                 .filter(c -> c.getValue().equals(dbData))
                 .findFirst()

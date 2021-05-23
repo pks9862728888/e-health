@@ -19,6 +19,9 @@ public class StateEnumConverter implements AttributeConverter<StateEnum, String>
 
     @Override
     public StateEnum convertToEntityAttribute(String dbData) {
+        if (dbData == null) {
+            return null;
+        }
         return Stream.of(StateEnum.values())
                 .filter(s -> s.getValue().equals(dbData))
                 .findFirst()

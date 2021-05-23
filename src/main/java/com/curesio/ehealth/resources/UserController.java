@@ -1,5 +1,6 @@
 package com.curesio.ehealth.resources;
 
+import com.curesio.ehealth.events.SendEmailVerificationMailEvent;
 import com.curesio.ehealth.exceptions.FileSizeTooLargeException;
 import com.curesio.ehealth.exceptions.FileTypeNotAllowedException;
 import com.curesio.ehealth.models.entities.User;
@@ -41,6 +42,10 @@ public class UserController extends ExceptionHandlingController {
             @RequestPart("id_back") MultipartFile idBack) throws IOException, MagicMatchNotFoundException, MagicException, FileSizeTooLargeException, MagicParseException, FileTypeNotAllowedException {
 
         User user = userService.registerUser(userCredentials, userDetails, documentType, idFront, idBack);
+
+        // Send email asynchronously
+        applicationEventPublisher.publishEvent(new SendEmailVerificationMailEvent(this, user.getId()));
+
         return user;
     }
 }

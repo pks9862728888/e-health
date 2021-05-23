@@ -19,6 +19,9 @@ public class ResourceKycStatusEnumConverter implements AttributeConverter<Resour
 
     @Override
     public ResourceKycStatusEnum convertToEntityAttribute(Character dbData) {
+        if (dbData == null) {
+            return null;
+        }
         return Stream.of(ResourceKycStatusEnum.values())
                 .filter(a -> a.getValue().equals(dbData))
                 .findFirst()

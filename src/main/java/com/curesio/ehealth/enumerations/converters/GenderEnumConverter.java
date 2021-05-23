@@ -19,6 +19,9 @@ public class GenderEnumConverter implements AttributeConverter<GenderEnum, Chara
 
     @Override
     public GenderEnum convertToEntityAttribute(Character dbData) {
+        if (dbData == null) {
+            return null;
+        }
         return Stream.of(GenderEnum.values())
                 .filter(e -> e.getValue().equals(dbData))
                 .findFirst()

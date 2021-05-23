@@ -19,6 +19,9 @@ public class UserKycDocumentTypeEnumConverter implements AttributeConverter<User
 
     @Override
     public UserKycDocumentTypeEnum convertToEntityAttribute(String dbData) {
+        if (dbData == null) {
+            return null;
+        }
         return Stream.of(UserKycDocumentTypeEnum.values())
                 .filter(a -> a.getValue().equals(dbData))
                 .findFirst()
