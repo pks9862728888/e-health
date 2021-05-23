@@ -1,17 +1,17 @@
 package com.curesio.ehealth.enumerations;
 
 public enum GenderEnum {
-    Male("M"),
-    Female("F"),
-    Others("O");
+    MALE('M'),
+    FEMALE('F'),
+    OTHERS('O');
 
-    String value;
+    Character value;
 
-    GenderEnum(String value) {
+    GenderEnum(Character value) {
         this.value = value;
     }
 
-    public String getValue() {
+    public Character getValue() {
         return value;
     }
 }

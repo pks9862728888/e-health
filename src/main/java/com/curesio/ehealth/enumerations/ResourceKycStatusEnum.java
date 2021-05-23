@@ -1,18 +1,18 @@
 package com.curesio.ehealth.enumerations;
 
 public enum ResourceKycStatusEnum {
-    VERIFIED("V"),
-    UNVERIFIED("U"),
-    REQUESTED_MORE_INFO("R"),
-    NOT_APPLICABLE("N");
+    VERIFIED('V'),
+    UNVERIFIED('U'),
+    REQUESTED_MORE_INFO('R'),
+    NOT_APPLICABLE('N');
 
-    String value;
+    Character value;
 
-    ResourceKycStatusEnum(String value) {
+    ResourceKycStatusEnum(Character value) {
         this.value = value;
     }
 
-    public String getValue() {
+    public Character getValue() {
         return value;
     }
 }
