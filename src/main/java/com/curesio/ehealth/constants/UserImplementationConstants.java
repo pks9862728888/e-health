@@ -2,6 +2,7 @@ package com.curesio.ehealth.constants;
 
 public interface UserImplementationConstants {
 
+    String ACCOUNT_CREATED_MSG = "Account creation successful! Please activate your account by clicking on the link mailed to you. After that please wait till our backend team verifies your KYC details.";
     String NO_USER_FOUND_WITH_USERNAME_MSG = "No user found with username: ";
     String DIRECTORY_CREATED_MSG = "Directory created: ";
     String FILE_TYPE_NOT_ALLOWED_MSG = "File type not allowed. Allowed file types are: .png, .jpeg, .pdf";

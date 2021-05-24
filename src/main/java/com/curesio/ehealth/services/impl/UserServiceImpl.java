@@ -48,7 +48,7 @@ public class UserServiceImpl implements UserService {
     @Value("${kyc.max-file-size-in-mb}")
     private Integer kycMaxFileSize;
 
-    @Value("${verification-token-expiry-days}")
+    @Value("${email-verification-token-expiry-days}")
     private int tokenExpiryDays;
 
     @Value("${server.offset-hours}")
@@ -56,6 +56,9 @@ public class UserServiceImpl implements UserService {
 
     @Value("${server.offset-minutes}")
     private int serverOffsetMinutes;
+
+    @Value("${frontend-url}")
+    private String frontEndUrl;
 
     private UserRepository userRepository;
     private UserCustomDetailsRepository userCustomDetailsRepository;
@@ -139,7 +142,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<String> generateVerificationTokenAndSaveToDb(long id) {
+    public Optional<EmailVerificationToken> generateVerificationTokenAndSaveToDb(long id) {
         Optional<User> optionalUser = userRepository.findById(id);
 
         if (optionalUser.isEmpty()) {
@@ -156,7 +159,32 @@ public class UserServiceImpl implements UserService {
         emailVerificationToken.setSent(false);
         emailVerificationTokenRepository.saveAndFlush(emailVerificationToken);
 
-        return Optional.of(emailVerificationToken.getToken());
+        return Optional.of(emailVerificationToken);
+    }
+
+    @Override
+    public String generateUrlFromVerificationToken(String token, String userUniqueId) {
+        return new StringBuilder(frontEndUrl)
+                .append("user/")
+                .append(userUniqueId)
+                .append("/verify-account?token=")
+                .append(token)
+                .toString();
+    }
+
+    @Override
+    public void updateMailSentStatus(long tokenId, boolean status, String reason) {
+        Optional<EmailVerificationToken> optionalEmailVerificationToken = emailVerificationTokenRepository.findFirstById(tokenId);
+
+        if (optionalEmailVerificationToken.isEmpty()) {
+            LOGGER.error("No token found in EmailVerificationToken table with id: " + tokenId);
+            return;
+        }
+
+        EmailVerificationToken verificationToken = optionalEmailVerificationToken.get();
+        verificationToken.setSent(status);
+        verificationToken.setReason(reason.length() > 0 ? reason : null);
+        emailVerificationTokenRepository.saveAndFlush(verificationToken);
     }
 
     private KycDocumentFileTypeEnum getFileTypeIfFileTypeIsValid(MultipartFile file) throws IOException, MagicParseException, MagicMatchNotFoundException, FileTypeNotAllowedException, FileSizeTooLargeException, MagicException {

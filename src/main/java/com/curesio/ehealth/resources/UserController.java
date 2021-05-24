@@ -1,8 +1,10 @@
 package com.curesio.ehealth.resources;
 
+import com.curesio.ehealth.constants.UserImplementationConstants;
 import com.curesio.ehealth.events.SendEmailVerificationMailEvent;
 import com.curesio.ehealth.exceptions.FileSizeTooLargeException;
 import com.curesio.ehealth.exceptions.FileTypeNotAllowedException;
+import com.curesio.ehealth.models.HttpResponse;
 import com.curesio.ehealth.models.entities.User;
 import com.curesio.ehealth.services.UserService;
 import net.sf.jmimemagic.MagicException;
@@ -11,7 +13,9 @@ import net.sf.jmimemagic.MagicParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -34,7 +38,7 @@ public class UserController extends ExceptionHandlingController {
     }
 
     @PostMapping(value = "/sign-up", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public User userSignUp(
+    public ResponseEntity<HttpResponse> userSignUp(
             @RequestPart("user_credentials") String userCredentials,
             @RequestPart("user_details") String userDetails,
             @RequestPart("document_type") String documentType,
@@ -44,8 +48,11 @@ public class UserController extends ExceptionHandlingController {
         User user = userService.registerUser(userCredentials, userDetails, documentType, idFront, idBack);
 
         // Send email asynchronously
-        applicationEventPublisher.publishEvent(new SendEmailVerificationMailEvent(this, user.getId()));
+        applicationEventPublisher.publishEvent(
+                new SendEmailVerificationMailEvent(this, user.getId(), user.getUserUniqueId(), user.getEmail()));
 
-        return user;
+        // Create and send response object
+        HttpResponse response = new HttpResponse(HttpStatus.CREATED.value(), HttpStatus.CREATED, HttpStatus.CREATED.getReasonPhrase(), UserImplementationConstants.ACCOUNT_CREATED_MSG);
+        return new ResponseEntity<>(response, response.getHttpStatus());
     }
 }
