@@ -1,8 +1,7 @@
 package com.curesio.ehealth.services.impl;
 
 import com.curesio.ehealth.enumerations.*;
-import com.curesio.ehealth.exceptions.FileSizeTooLargeException;
-import com.curesio.ehealth.exceptions.FileTypeNotAllowedException;
+import com.curesio.ehealth.exceptions.*;
 import com.curesio.ehealth.models.UserPrincipal;
 import com.curesio.ehealth.models.entities.*;
 import com.curesio.ehealth.repositories.*;
@@ -10,6 +9,7 @@ import com.curesio.ehealth.services.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.sf.jmimemagic.*;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,16 +65,18 @@ public class UserServiceImpl implements UserService {
     private UserKycDocumentsRepository userKycDocumentsRepository;
     private UserKycStatusRepository userKycStatusRepository;
     private EmailVerificationTokenRepository emailVerificationTokenRepository;
+    private PhysicianDetailsRepository physicianDetailsRepository;
     private PasswordEncoder passwordEncoder;
     private Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, UserCustomDetailsRepository userCustomDetailsRepository, UserKycDocumentsRepository userKycDocumentsRepository, UserKycStatusRepository userKycStatusRepository, EmailVerificationTokenRepository emailVerificationTokenRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, UserCustomDetailsRepository userCustomDetailsRepository, UserKycDocumentsRepository userKycDocumentsRepository, UserKycStatusRepository userKycStatusRepository, EmailVerificationTokenRepository emailVerificationTokenRepository, PhysicianDetailsRepository physicianDetailsRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userCustomDetailsRepository = userCustomDetailsRepository;
         this.userKycDocumentsRepository = userKycDocumentsRepository;
         this.userKycStatusRepository = userKycStatusRepository;
         this.emailVerificationTokenRepository = emailVerificationTokenRepository;
+        this.physicianDetailsRepository = physicianDetailsRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -97,13 +99,147 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User registerUser(String userCredentials, String userDetails, String documentType, MultipartFile idFront, MultipartFile idBack) throws IOException, MagicMatchNotFoundException, MagicException, MagicParseException, FileTypeNotAllowedException, FileSizeTooLargeException {
+    public void validateWhetherEmailExistsAndCanBeUsedForNewUserRegistration(String email, AccountTypeEnum accountType) throws EmailExistsException {
+        int emailCount;
+
+        // An user can have multiple laboratories or pharmacies registered under same email
+        if (accountType.equals(AccountTypeEnum.LABORATORY) || accountType.equals(AccountTypeEnum.PHARMACY)) {
+            emailCount = userRepository.countAllByEmailAndNotAccountType(email, accountType);
+        } else {
+            emailCount = userRepository.countAllByEmail(email);
+        }
+
+        // If email exists then throw exception
+        if (emailCount > 0) {
+            LOGGER.error("Tried to register using email: {} for account type: {}, found email: {}", email, accountType, emailCount);
+            throw new EmailExistsException(String.format(EMAIL_EXISTS_MSG, email));
+        }
+    }
+
+    @Override
+    public void validatePassword(String password) throws PasswordValidationException {
+        if (password == null) {
+            throw new PasswordValidationException(PASSWORD_CANNOT_BE_NULL_OR_EMPTY_MSG);
+        }
+        boolean isEmpty = true;
+        boolean containUpperCase = false;
+        boolean containLowerCase = false;
+        boolean containDigit = false;
+        boolean containSpecialCharacter = false;
+
+        for (int i = 0; i < password.length(); i++) {
+            char ch = password.charAt(i);
+
+            if (!Character.isWhitespace(ch)) {
+                isEmpty = false;
+
+                if (Character.isAlphabetic(ch)) {
+                    if (Character.isUpperCase(ch)) {
+                        containUpperCase = true;
+                    } else if (Character.isLowerCase(ch)) {
+                        containLowerCase = true;
+                    }
+                } else if (Character.isDigit(ch)) {
+                    containDigit = true;
+                } else {
+                    containSpecialCharacter = true;
+                }
+            }
+
+            if (containSpecialCharacter && containDigit && containUpperCase && containLowerCase && !isEmpty) {
+                break;
+            }
+        }
+
+        if (isEmpty) {
+            throw new PasswordValidationException(PASSWORD_CANNOT_BE_NULL_OR_EMPTY_MSG);
+        } else if (!(containSpecialCharacter && containDigit && containUpperCase && containLowerCase)) {
+            throw new PasswordValidationException(PASSWORD_SHOULD_CONTAIN_A_COMBINATION_OF_UPPER_CASE_LOWER_CASE_DIGIT_AND_SPECIAL_CHARACTER_MSG);
+        } else if (password.strip().length() < PASSWORD_MIN_LENGTH) {
+            throw new PasswordValidationException(PASSWORD_TOO_SHORT_MSG);
+        }
+    }
+
+    @Override
+    public void validateUsername(String username) throws UsernameExistsException, UsernameValidationException {
+        if (StringUtils.isEmpty(username) || StringUtils.isWhitespace(username)) {
+            throw new UsernameValidationException(USERNAME_CANNOT_BE_NULL_OR_EMPTY_MSG);
+        }
+        if (userRepository.countAllByUsername(username.strip()) > 0) {
+            throw new UsernameExistsException(USERNAME_EXISTS_MSG);
+        }
+    }
+
+    @Override
+    public User validateAndRegisterUser(String userCredentials, String userDetails, String documentType, MultipartFile idFront, MultipartFile idBack) throws IOException, MagicMatchNotFoundException, MagicException, MagicParseException, FileTypeNotAllowedException, FileSizeTooLargeException, EmailExistsException, PasswordValidationException, UsernameExistsException, UsernameValidationException {
         ObjectMapper objectMapper = new ObjectMapper();
 
         // Extract form fields from request and create objects
         User user = objectMapper.readValue(userCredentials, User.class);
         UserCustomDetails userCustomDetailsObj = objectMapper.readValue(userDetails, UserCustomDetails.class);
 
+        // Validate user information
+        validateUserInformation(user);
+
+        // Save user
+        saveUser(user);
+
+        // Save user details
+        saveUserDetails(userCustomDetailsObj, user);
+
+        // Save user kyc details
+        saveUserKycDocuments(documentType, idFront, idBack, user);
+
+        // Save user kyc status details
+        saveUserKycStatusDetails(user);
+
+        return user;
+    }
+
+    @Override
+    public User validateAndRegisterResource(String userCredentials, String userDetails, String documentType, MultipartFile idFront, MultipartFile idBack, String physicianDetails) throws IOException, MagicMatchNotFoundException, MagicException, MagicParseException, FileTypeNotAllowedException, FileSizeTooLargeException, EmailExistsException, PasswordValidationException, UsernameValidationException, UsernameExistsException {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        // Extract form fields from request and create objects
+        User user = objectMapper.readValue(userCredentials, User.class);
+        UserCustomDetails userCustomDetailsObj = objectMapper.readValue(userDetails, UserCustomDetails.class);
+        PhysicianDetails physicianDetailsObj = null;
+
+        // Mapping resource specific details
+        if (user.getAccountType().equals(AccountTypeEnum.PHYSICIAN)) {
+            physicianDetailsObj = objectMapper.readValue(physicianDetails, PhysicianDetails.class);
+        }
+
+        // Validate user information
+        validateUserInformation(user);
+
+        // Save user
+        saveUser(user);
+
+        // Save user details
+        saveUserDetails(userCustomDetailsObj, user);
+
+        // Save user kyc details
+        saveUserKycDocuments(documentType, idFront, idBack, user);
+
+        // Save user kyc status details
+        saveUserKycStatusDetails(user);
+
+        // Save resource specific details
+        if (user.getAccountType().equals(AccountTypeEnum.PHYSICIAN)) {
+            savePhysicianDetails(physicianDetailsObj, user);
+        }
+
+        return user;
+    }
+
+    private void validateUserInformation(User user) throws EmailExistsException, UsernameValidationException, UsernameExistsException, PasswordValidationException {
+        validateUsername(user.getUsername());
+        validateWhetherEmailExistsAndCanBeUsedForNewUserRegistration(user.getEmail().strip(), user.getAccountType());
+        validatePassword(user.getPassword());
+    }
+
+    private void saveUser(User user) {
         // wire in values in user object
         user.setActive(USER_IS_ACTIVE_INITIALLY);
         user.setNonLocked(USER_ACCOUNT_IS_NON_LOCKED_INITIALLY);
@@ -111,16 +247,21 @@ public class UserServiceImpl implements UserService {
         user.setEmail(user.getEmail().strip());
         user.setPhone(getStringIfExistsOrNull(user.getPhone()));
         user.setUserUniqueId(generateUniqueIdForUser(user.getAccountType()));
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPassword(passwordEncoder.encode(user.getPassword().strip()));
+        user.setUsername(user.getUsername().strip());
 
         // Save user
         userRepository.saveAndFlush(user);
+    }
 
+    private void saveUserDetails(UserCustomDetails userDetails, User user) {
         // Save user details
-        userCustomDetailsObj.setUser(user);
-        userCustomDetailsObj.setCountry(CountryEnum.INDIA);
-        userCustomDetailsRepository.saveAndFlush(userCustomDetailsObj);
+        userDetails.setUser(user);
+        userDetails.setCountry(CountryEnum.INDIA);
+        userCustomDetailsRepository.saveAndFlush(userDetails);
+    }
 
+    private void saveUserKycDocuments(String documentType, MultipartFile idFront, MultipartFile idBack, User user) throws IOException, MagicMatchNotFoundException, FileSizeTooLargeException, MagicParseException, MagicException, FileTypeNotAllowedException {
         // Save user kyc details
         UserKycDocuments kycDocuments = new UserKycDocuments();
         kycDocuments.setUser(user);
@@ -130,15 +271,20 @@ public class UserServiceImpl implements UserService {
         kycDocuments.setIdFront(saveUserKycDocuments(user.getUserUniqueId(), idFront, "id_front"));
         kycDocuments.setIdBack(saveUserKycDocuments(user.getUserUniqueId(), idBack, "id_back"));
         userKycDocumentsRepository.saveAndFlush(kycDocuments);
+    }
 
+    private void saveUserKycStatusDetails(User user) {
         // Save user kyc status details
         UserKycStatus userKycStatus = new UserKycStatus();
         userKycStatus.setUser(user);
         userKycStatus.setUserKycStatus(UserKycStatusEnum.UNVERIFIED);
-        userKycStatus.setResourceKycStatus(ResourceKycStatusEnum.NOT_APPLICABLE);
+        userKycStatus.setResourceKycStatus(user.getAccountType().equals(AccountTypeEnum.USER) ? ResourceKycStatusEnum.NOT_APPLICABLE : ResourceKycStatusEnum.UNVERIFIED);
         userKycStatusRepository.saveAndFlush(userKycStatus);
+    }
 
-        return user;
+    private void savePhysicianDetails(PhysicianDetails physicianDetailsObj, User user) {
+        physicianDetailsObj.setUser(user);
+        physicianDetailsRepository.saveAndFlush(physicianDetailsObj);
     }
 
     @Override

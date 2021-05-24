@@ -24,14 +24,14 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/api/v1/user")
-public class UserController extends ExceptionHandlingController {
+@RequestMapping("/api/v1/physician")
+public class PhysicianController extends ExceptionHandlingController {
 
     private UserService userService;
     private ApplicationEventPublisher applicationEventPublisher;
 
     @Autowired
-    public UserController(@Qualifier("userService") UserService userService, ApplicationEventPublisher applicationEventPublisher) {
+    public PhysicianController(@Qualifier("userService") UserService userService, ApplicationEventPublisher applicationEventPublisher) {
         this.userService = userService;
         this.applicationEventPublisher = applicationEventPublisher;
     }
@@ -40,11 +40,12 @@ public class UserController extends ExceptionHandlingController {
     public ResponseEntity<HttpResponse> userSignUp(
             @RequestPart("user_credentials") String userCredentials,
             @RequestPart("user_details") String userDetails,
+            @RequestPart("physician_details") String physicianDetails,
             @RequestPart("document_type") String documentType,
             @RequestPart("id_front") MultipartFile idFront,
-            @RequestPart("id_back") MultipartFile idBack) throws IOException, MagicMatchNotFoundException, MagicException, FileSizeTooLargeException, MagicParseException, FileTypeNotAllowedException, EmailExistsException, PasswordValidationException, UsernameExistsException, UsernameValidationException {
+            @RequestPart("id_back") MultipartFile idBack) throws IOException, MagicMatchNotFoundException, MagicException, FileSizeTooLargeException, MagicParseException, FileTypeNotAllowedException, EmailExistsException, PasswordValidationException, UsernameValidationException, UsernameExistsException {
 
-        User user = userService.validateAndRegisterUser(userCredentials, userDetails, documentType, idFront, idBack);
+        User user = userService.validateAndRegisterResource(userCredentials, userDetails, documentType, idFront, idBack, physicianDetails);
 
         // Send email asynchronously
         applicationEventPublisher.publishEvent(

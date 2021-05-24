@@ -68,8 +68,13 @@ public class ExceptionHandlingController {
         return createHttpResponse(HttpStatus.BAD_REQUEST, exception.getMessage());
     }
 
-    @ExceptionHandler(UsernameExistsException.class)
-    public ResponseEntity<HttpResponse> usernameExistsException(UsernameExistsException exception) {
+    @ExceptionHandler(PasswordValidationException.class)
+    public ResponseEntity<HttpResponse> passwordValidationException(PasswordValidationException exception) {
+        return createHttpResponse(HttpStatus.BAD_REQUEST, exception.getMessage());
+    }
+
+    @ExceptionHandler({UsernameExistsException.class, UsernameValidationException.class})
+    public ResponseEntity<HttpResponse> usernameValidationException(Exception exception) {
         return createHttpResponse(HttpStatus.BAD_REQUEST, exception.getMessage());
     }
 

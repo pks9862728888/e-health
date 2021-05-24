@@ -1,5 +1,8 @@
 package com.curesio.ehealth.models.entities;
 
+import com.curesio.ehealth.enumerations.CurrencyEnum;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
 
@@ -11,10 +14,14 @@ public class PhysicianDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name = "fees")
+    @Column(name = "fees", nullable = false)
     private BigDecimal fees;
 
-    @Column(name = "years_of_experience")
+    @Column(name = "currency", nullable = false)
+    private CurrencyEnum currency;
+
+    @Column(name = "years_of_experience", nullable = false)
+    @JsonProperty("years_of_experience")
     private int yearsOfExperience;
 
     @OneToOne
@@ -23,9 +30,10 @@ public class PhysicianDetails {
 
     public PhysicianDetails() {}
 
-    public PhysicianDetails(long id, BigDecimal fees, int yearsOfExperience, User user) {
+    public PhysicianDetails(long id, BigDecimal fees, CurrencyEnum currency, int yearsOfExperience, User user) {
         this.id = id;
         this.fees = fees;
+        this.currency = currency;
         this.yearsOfExperience = yearsOfExperience;
         this.user = user;
     }
@@ -52,6 +60,14 @@ public class PhysicianDetails {
 
     public void setYearsOfExperience(int yearsOfExperience) {
         this.yearsOfExperience = yearsOfExperience;
+    }
+
+    public CurrencyEnum getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(CurrencyEnum currency) {
+        this.currency = currency;
     }
 
     public User getUser() {
