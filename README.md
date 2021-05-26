@@ -93,7 +93,7 @@ This json format is consistent throughout the API, only the json content changes
 ```
 {
   "user_credentials": "{
-      "username": "user1",
+      "username": "phy",
       "email": "email@gmail.com",
       "phone": "",
       "password": "toor",
@@ -109,6 +109,55 @@ This json format is consistent throughout the API, only the json content changes
       "fees": 12000.0,
       "currency": "INR",
       "years_of_experience": 1
+    }"
+  "document_type": "AADHAR",
+  "id_front": <Multipart File>,
+  "id_back": <Multipart File>
+}
+```
+**Success Response format:**
+```
+{
+    "httpStatusCode": 201,
+    "httpStatus": "CREATED",
+    "reason": "CREATED",
+    "message": "ACCOUNT CREATION SUCCESSFUL! PLEASE ACTIVATE YOUR ACCOUNT BY CLICKING ON THE LINK MAILED TO YOU. AFTER THAT PLEASE WAIT TILL OUR BACKEND TEAM VERIFIES YOUR KYC DETAILS.",
+    "timestamp": "24-05-2021 22:44:49"
+}
+```
+**Error response codes:** 400<br>
+**Acceptable file types:** .pdf, .jpeg, .png<br>
+**Max file upload size:** 30 Mb<br>
+
+***
+### Laboratory Registration endpoint
+**Endpoint:** _/api/v1/laboratory/sign-up_<br>
+**Accepts:** "multipart/form-data"<br>
+**Authentication required:** false<br>
+**Request Method:** POST<br>
+
+**Request Payload format:**
+```
+{
+  "user_credentials": "{
+      "username": "phy",
+      "email": "email@gmail.com",
+      "phone": "",
+      "password": "toor",
+      "account_type": "LABORATORY"
+    }",
+  "user_details": "{
+      "first_name": "First Name User1",
+      "last_name": "Last Name User1",
+      "gender": "MALE",
+      "date_of_birth": "12-12-1998"
+    }",
+  "laboratory_details": "{
+        "name": "laboratory name",
+        "landmark": "abc adress",
+        "state": "DELHI",
+        "pin_code": "799898",
+        "country": "INDIA"
     }"
   "document_type": "AADHAR",
   "id_front": <Multipart File>,
