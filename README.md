@@ -97,7 +97,7 @@ This json format is consistent throughout the API, only the json content changes
       "email": "email@gmail.com",
       "phone": "",
       "password": "toor",
-      "account_type": "USER"
+      "account_type": "PHYSICIAN"
     }",
   "user_details": "{
       "first_name": "First Name User1",
