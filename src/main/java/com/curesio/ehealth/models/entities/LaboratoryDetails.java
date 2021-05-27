@@ -2,6 +2,7 @@ package com.curesio.ehealth.models.entities;
 
 import com.curesio.ehealth.enumerations.CountryEnum;
 import com.curesio.ehealth.enumerations.StateEnum;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 
@@ -23,6 +24,7 @@ public class LaboratoryDetails {
     private StateEnum state;
 
     @Column(name = "pin_code", nullable = false)
+    @JsonProperty("pin_code")
     private String pinCode;
 
     @Column(name = "country", nullable = false)

@@ -16,6 +16,9 @@
 	<properties>
 		<java.version>11</java.version>
 		<kotlin.version>1.3.61</kotlin.version>
+		<lombok.version>1.18.20</lombok.version>
+		<java-jwt.version>3.16.0</java-jwt.version>
+		<jmimemagic.version>0.1.5</jmimemagic.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -37,7 +40,7 @@
 		<dependency>
 			<groupId>com.auth0</groupId>
 			<artifactId>java-jwt</artifactId>
-			<version>3.16.0</version>
+			<version>${java-jwt.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -47,10 +50,17 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 		</dependency>
+		<!--For detecting mime type of files from object stream-->
 		<dependency>
 			<groupId>net.sf.jmimemagic</groupId>
 			<artifactId>jmimemagic</artifactId>
-			<version>0.1.5</version>
+			<version>${jmimemagic.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>${lombok.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>mysql</groupId>

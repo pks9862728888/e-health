@@ -7,6 +7,7 @@ import com.curesio.ehealth.models.entities.*;
 import com.curesio.ehealth.repositories.*;
 import com.curesio.ehealth.services.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.NonNull;
 import net.sf.jmimemagic.*;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -66,17 +67,19 @@ public class UserServiceImpl implements UserService {
     private UserKycStatusRepository userKycStatusRepository;
     private EmailVerificationTokenRepository emailVerificationTokenRepository;
     private PhysicianDetailsRepository physicianDetailsRepository;
+    private LaboratoryDetailsRepository laboratoryDetailsRepository;
     private PasswordEncoder passwordEncoder;
     private Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, UserCustomDetailsRepository userCustomDetailsRepository, UserKycDocumentsRepository userKycDocumentsRepository, UserKycStatusRepository userKycStatusRepository, EmailVerificationTokenRepository emailVerificationTokenRepository, PhysicianDetailsRepository physicianDetailsRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, UserCustomDetailsRepository userCustomDetailsRepository, UserKycDocumentsRepository userKycDocumentsRepository, UserKycStatusRepository userKycStatusRepository, EmailVerificationTokenRepository emailVerificationTokenRepository, PhysicianDetailsRepository physicianDetailsRepository, LaboratoryDetailsRepository laboratoryDetailsRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userCustomDetailsRepository = userCustomDetailsRepository;
         this.userKycDocumentsRepository = userKycDocumentsRepository;
         this.userKycStatusRepository = userKycStatusRepository;
         this.emailVerificationTokenRepository = emailVerificationTokenRepository;
         this.physicianDetailsRepository = physicianDetailsRepository;
+        this.laboratoryDetailsRepository = laboratoryDetailsRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -197,24 +200,25 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User validateAndRegisterResource(String userCredentials, String userDetails, String documentType, MultipartFile idFront, MultipartFile idBack, String physicianDetails) throws IOException, MagicMatchNotFoundException, MagicException, MagicParseException, FileTypeNotAllowedException, FileSizeTooLargeException, EmailExistsException, PasswordValidationException, UsernameValidationException, UsernameExistsException {
+    public User validateAndRegisterResource(String userCredentials, String userDetails, String documentType, MultipartFile idFront, MultipartFile idBack, @NonNull String resourceDetails) throws IOException, MagicMatchNotFoundException, MagicException, MagicParseException, FileTypeNotAllowedException, FileSizeTooLargeException, EmailExistsException, PasswordValidationException, UsernameValidationException, UsernameExistsException {
         ObjectMapper objectMapper = new ObjectMapper();
 
         // Extract form fields from request and create objects
         User user = objectMapper.readValue(userCredentials, User.class);
         UserCustomDetails userCustomDetailsObj = objectMapper.readValue(userDetails, UserCustomDetails.class);
-        PhysicianDetails physicianDetailsObj = null;
-
-        // Mapping resource specific details
-        if (user.getAccountType().equals(AccountTypeEnum.PHYSICIAN)) {
-            physicianDetailsObj = objectMapper.readValue(physicianDetails, PhysicianDetails.class);
-        }
 
         // Validate user information
         validateUserInformation(user);
 
         // Save user
         saveUser(user);
+
+        // Mapping and saving resource specific details
+        if (user.getAccountType().equals(AccountTypeEnum.PHYSICIAN)) {
+            savePhysicianDetails(objectMapper.readValue(resourceDetails, PhysicianDetails.class), user);
+        } else if (user.getAccountType().equals(AccountTypeEnum.LABORATORY)) {
+            saveLaboratoryDetails(objectMapper.readValue(resourceDetails, LaboratoryDetails.class), user);
+        }
 
         // Save user details
         saveUserDetails(userCustomDetailsObj, user);
@@ -224,11 +228,6 @@ public class UserServiceImpl implements UserService {
 
         // Save user kyc status details
         saveUserKycStatusDetails(user);
-
-        // Save resource specific details
-        if (user.getAccountType().equals(AccountTypeEnum.PHYSICIAN)) {
-            savePhysicianDetails(physicianDetailsObj, user);
-        }
 
         return user;
     }
@@ -285,6 +284,11 @@ public class UserServiceImpl implements UserService {
     private void savePhysicianDetails(PhysicianDetails physicianDetailsObj, User user) {
         physicianDetailsObj.setUser(user);
         physicianDetailsRepository.saveAndFlush(physicianDetailsObj);
+    }
+
+    private void saveLaboratoryDetails(LaboratoryDetails laboratoryDetailsObj, User user) {
+        laboratoryDetailsObj.setUser(user);
+        laboratoryDetailsRepository.saveAndFlush(laboratoryDetailsObj);
     }
 
     @Override

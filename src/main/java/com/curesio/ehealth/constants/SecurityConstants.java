@@ -20,6 +20,7 @@ public interface SecurityConstants {
     String[] PUBLIC_URLS = {
             "/api/v1/user/sign-up",
             "/api/v1/physician/sign-up",
+            "/api/v1/laboratory/sign-up",
             "/api/v1/user/login",
             "/api/v1/user/verify-email/**",
             "/api/v1/user/request-reset-password",
