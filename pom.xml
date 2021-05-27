@@ -15,6 +15,7 @@
 	<description>Full stack project for e-health</description>
 	<properties>
 		<java.version>11</java.version>
+		<maven-help-plugin.version>3.2.0</maven-help-plugin.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -55,11 +56,55 @@
 		</dependency>
 	</dependencies>
 
+	<profiles>
+		<profile>
+			<id>prod</id>
+			<build>
+				<directory>target/prod</directory>
+			</build>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<spring.profiles.active>prod</spring.profiles.active>
+			</properties>
+		</profile>
+		<profile>
+			<id>dev</id>
+			<build>
+				<directory>target/dev</directory>
+			</build>
+			<properties>
+				<spring.profiles.active>dev</spring.profiles.active>
+			</properties>
+		</profile>
+	</profiles>
+
 	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-help-plugin</artifactId>
+				<version>${maven-help-plugin.version}</version>
+				<executions>
+					<execution>
+						<id>show-profiles</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>active-profiles</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
